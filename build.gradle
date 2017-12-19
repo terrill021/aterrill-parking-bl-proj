@@ -9,12 +9,13 @@ targetCompatibility = 1.8
 dependencies {
     testCompile project.ext.junit
     testCompile project.ext.mockito
-    compile project.ext.springcontext  
+    compile group: 'org.springframework', name: 'spring-context', version: '4.3.13.RELEASE'  
+    compile project(":aterrill-repository-proj")     
 }
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'aterrill-parking',
+        attributes 'Implementation-Title': 'aterrill-parking-proj',
                    'Implementation-Version': version
     }
 }
