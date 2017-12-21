@@ -10,7 +10,8 @@ dependencies {
     testCompile project.ext.junit
     testCompile project.ext.mockito
     compile group: 'org.springframework', name: 'spring-context', version: '4.3.13.RELEASE'  
-    compile project(":aterrill-repository-proj")     
+    compile project(":aterrill-repository-proj")
+    compile project(":aterrill-utilities-proj")       
 }
 
 jar {
@@ -28,4 +29,4 @@ test {
 	reports.junitXml.destination =  file("jacoco/test-results")
 }
 
-//jacocoTestReport.dependsOn(test)
+jacocoTestReport.dependsOn(test)

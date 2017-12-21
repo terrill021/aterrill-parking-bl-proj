@@ -1,6 +1,6 @@
 package com.ceiba.bl.parking.models;
 
-import java.sql.Date;
+import java.util.Date;
 
 public class Bill {
 
@@ -11,6 +11,15 @@ public class Bill {
 	private Vehicle vehicle;
 	
 	private Double value;
+	private Boolean state;
+	
+	public Boolean getState() {
+		return state;
+	}
+
+	public void setState(Boolean state) {
+		this.state = state;
+	}
 
 	public Date getDateIn() {
 		return dateIn;
