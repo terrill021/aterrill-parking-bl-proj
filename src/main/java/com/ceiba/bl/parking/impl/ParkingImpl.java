@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ceiba.bl.parking.IParking;
+import com.ceiba.bl.parking.databuilders.ParkingDataBuilder;
 import com.ceiba.bl.parking.models.Bill;
 import com.ceiba.bl.parking.models.Parking;
 import com.ceiba.bl.parking.models.Vehicle;
+import com.ceiba.bl.parking.models.VehicleType;
 import com.ceiba.repository.nosqldb.IDbNoSql;
 import com.ceiba.utilities.IDateUtilities;
 
@@ -37,70 +39,104 @@ public class ParkingImpl implements IParking{
 			throw new Exception("There is not capacity for motorcycles");
 		}		
 		
-		if (vehicle.getLicensePlate().substring(0, 1).toLowerCase().equals("a")) {
+		if (vehicle.getLicensePlate().substring(0, 1).equalsIgnoreCase("a")) {
 			if(iDateUtilities.getDayOfWeek() == Calendar.SUNDAY || iDateUtilities.getDayOfWeek() == Calendar.MONDAY) {
 				throw new Exception("You are not authorized to in on sundays or mondays");
 			}
 		}
-		
+				
 		Bill bill = new Bill();
-		bill.setVehicle(vehicle);
-		bill.setDateIn(iDateUtilities.getDateStamp());
 		
+		bill.setVehicle(vehicle);
+		bill.setState(Boolean.TRUE);		
+		bill.setDateIn(iDateUtilities.getDateStamp());
+		bill.setParkingId(parking.getId());
 		iDbNoSql.save(bill);
 		
+		parking.getBills().add(bill);
+		
+		switch (vehicle.getType()) {
+			case "MOTORCYCLE":
+				parking.getMotorcycles().add(vehicle);
+			break;
+			case "CAR":
+				parking.getCars().add(vehicle);
+			break;
+			default:
+				throw new Exception("Vehicle type not found");
+		}
+	
+		iDbNoSql.saveOrUpdate(parking);
 		return bill;
 	}
 	
-
 	@Override
 	public synchronized Bill charge(String parkingId, String licensePlate) throws Exception{
 		
 		Parking parking = searchParking(parkingId);
-		Map<String, String> field_values = new HashMap<>();
-		field_values.put("licensePlate", licensePlate);
-		field_values.put("state", "true");
 		
-		List<Bill> bills  = iDbNoSql.findByFieldValues(field_values, Bill.class);
-		Bill bill = bills.get(0);
-		Double total = 0d;
-		if (bill != null) {
-			
-			if (bill.getVehicle().getType().equals("motorcycle") &&
-					bill.getVehicle().getDisplacement() > 500) {
-				total += 2000;
-			}
-			Float numHours = iDateUtilities.calculateNumHoursBetweenDates (bill.getDateIn(), iDateUtilities.getDateStamp()); 
-			Map<String, Float> pricesTable = parking.getPriceTable().getPricesTable().get(bill.getVehicle()); 
-			
-			bill.setValue(calcucalateBillBalue(numHours, pricesTable));
-			iDbNoSql.save(bill);
-			return bill;
-			
-		} else {
+		Map<String, String> fieldValues = new HashMap<>();
+		fieldValues.put("vehicle.licensePlate", licensePlate);
+		//fieldValues.put("state", "true");
+		
+		List<Bill> bills  = iDbNoSql.findByFieldValues(fieldValues, Bill.class);
+		
+		if (bills == null || bills.isEmpty()) {
 			throw new Exception("There is not registered car with this license plate");
 		}
+		
+		Bill bill = bills.get(0);
+		
+		Double subTotal = 0d;
+		
+		if (bill.getVehicle().getType().equalsIgnoreCase(VehicleType.MOTORCYCLE.getType()) &&
+				bill.getVehicle().getDisplacement() > 500) {
+			subTotal += 2000;
+		}
+		
+		Float numHours = iDateUtilities.calculateNumHoursBetweenDates (bill.getDateIn(), iDateUtilities.getDateStamp()); 
+		
+		Map<String, Float> pricesTable = parking.getPriceTable().getPricesTable().get(bill.getVehicle().getType()); 
+		
+		bill.setValue(calcucalateBillBalue(numHours, pricesTable) + subTotal);
+		iDbNoSql.saveOrUpdate(bill);		
+		return bill;
 	}	
+	
+
+	@Override
+	public Parking registerParking(Parking parking) throws Exception {
+		iDbNoSql.save(parking);		
+		return parking;
+	}
 	
 	private Parking searchParking(String parkingId) throws Exception {
 		Parking parking = iDbNoSql.findOne(parkingId, Parking.class);
 		
-		if (parking != null){ return parking;} else throw new Exception("Parking not found");
+		if (parking != null){ return parking;} else throw new Exception("Parking with id " + parkingId + " not found");
 	}
 	
-	private Double calcucalateBillBalue(Float numHours, Map<String, Float> pricesTable) {
-		// TODO Auto-generated method stub
-		return 0d;
-	}
-
-	private int countMotorcycles() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
-	private int countCars() {
-		int res = 0;		
-		return res;
+	/**
+	 * Calculate bill value.
+	 * @param numHours number of hours in parking
+	 * @param pricesTable Map prices with unit times and values
+	 * @return bill value by time and price table
+	 */
+	public Float calcucalateBillBalue(Float numHours, Map<String, Float> pricesTable) {
+		
+		Float value = 0f;
+		
+		if (numHours > 0) {
+			if (numHours <= 9) {
+				value += (numHours * pricesTable.get("HOUR"));
+				return value;
+			}
+			value += pricesTable.get("DAY");
+			numHours -= 24;
+			value += calcucalateBillBalue(numHours, pricesTable);
+		}
+		
+		return value;
 	}
 
 	public IDbNoSql getiDbNoSql() {

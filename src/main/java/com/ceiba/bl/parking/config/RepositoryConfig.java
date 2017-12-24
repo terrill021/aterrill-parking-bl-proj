@@ -12,7 +12,7 @@ import com.ceiba.repository.nosqldb.impl.MongoDb;
 import com.ceiba.repository.nosqldb.model.DataSourceNoSql;
 
 @Configuration
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:aplication.properties")
 public class RepositoryConfig extends MongoDbConnection{
 
 	@Autowired
@@ -30,7 +30,6 @@ public class RepositoryConfig extends MongoDbConnection{
     
 	@Override
 	public DataSourceNoSql getDataSourceNoSql() {
-		// TODO Auto-generated method stub
 		
 		DataSourceNoSql dataSourceNoSql = new DataSourceNoSql();
 		dataSourceNoSql.setHost(readProperty("repository.ip"));

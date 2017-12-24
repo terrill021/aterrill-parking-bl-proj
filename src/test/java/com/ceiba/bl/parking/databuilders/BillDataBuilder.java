@@ -3,6 +3,7 @@ package com.ceiba.bl.parking.databuilders;
 import java.util.Calendar;
 import java.util.Date;
 
+import com.ceiba.bl.parking.models.Bill;
 import com.ceiba.bl.parking.models.Vehicle;
 
 public class BillDataBuilder {
@@ -10,7 +11,7 @@ public class BillDataBuilder {
 	private String id;
 	private Date dateIn;
 	private Date dateOut;
-	
+	private String parkingId;
 	private Vehicle vehicle;
 	
 	private Double value;
@@ -24,8 +25,12 @@ public class BillDataBuilder {
 		this.value = 1000d;
 		this.state = true;
 	}
+	
+	public Bill build() {
+		return new Bill(this.id, this.dateIn, dateOut, this.parkingId, this.vehicle, this.value, this.state);
+	}
 
-	public String getId() {
+	String getId() {
 		return id;
 	}
 
@@ -47,32 +52,45 @@ public class BillDataBuilder {
 		return dateOut;
 	}
 
-	public void setDateOut(Date dateOut) {
+	public BillDataBuilder setDateOut(Date dateOut) {
 		this.dateOut = dateOut;
+		return this;
 	}
 
 	public Vehicle getVehicle() {
 		return vehicle;
 	}
 
-	public void setVehicle(Vehicle vehicle) {
+	public BillDataBuilder setVehicle(Vehicle vehicle) {
 		this.vehicle = vehicle;
+		return this;
 	}
 
 	public Double getValue() {
 		return value;
 	}
 
-	public void setValue(Double value) {
+	public BillDataBuilder setValue(Double value) {
 		this.value = value;
+		return this;
 	}
 
 	public Boolean getState() {
 		return state;
 	}
 
-	public void setState(Boolean state) {
+	public BillDataBuilder setState(Boolean state) {
 		this.state = state;
+		return this;
+	}
+
+	public String getParkingId() {
+		return parkingId;
+	}
+
+	public BillDataBuilder setParkingId(String parkingId) {
+		this.parkingId = parkingId;
+		return this;
 	}
 	
 	

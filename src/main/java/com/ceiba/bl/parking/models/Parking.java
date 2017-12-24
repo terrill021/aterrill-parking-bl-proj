@@ -2,6 +2,9 @@ package com.ceiba.bl.parking.models;
 
 import java.util.List;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 public class Parking {
 	
 	private String id;

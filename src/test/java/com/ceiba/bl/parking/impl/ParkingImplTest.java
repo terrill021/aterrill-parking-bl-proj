@@ -2,19 +2,25 @@ package com.ceiba.bl.parking.impl;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.ceiba.bl.parking.IParking;
+import com.ceiba.bl.parking.databuilders.BillDataBuilder;
 import com.ceiba.bl.parking.databuilders.ParkingDataBuilder;
+import com.ceiba.bl.parking.databuilders.PriceTableDataBuilder;
 import com.ceiba.bl.parking.models.Bill;
 import com.ceiba.bl.parking.models.Parking;
+import com.ceiba.bl.parking.models.PriceTable;
 import com.ceiba.bl.parking.models.Vehicle;
 import com.ceiba.repository.nosqldb.IDbNoSql;
-import com.ceiba.repository.nosqldb.impl.MongoDb;
 import com.ceiba.utilities.IDateUtilities;
 
 public class ParkingImplTest {
@@ -35,13 +41,14 @@ public class ParkingImplTest {
 		ParkingImpl.setiDateUtilities(iDateUtilities);
 		bill = new Bill();
 		parking = new ParkingDataBuilder().build();
-		vehicle = new Vehicle("321", "bcd-123", "car", 80f);
 	}
 	
 	@Test
 	public void testRegisterVehicle() throws Exception {
 		
 		// Arrange
+		vehicle = new Vehicle("321", "bcd-123", "CAR", 80f);
+
 		Mockito.when(iDbNoSql.save(bill)).thenReturn(true);
 		Mockito.when(iDbNoSql.findOne(parking.getId(), Parking.class)).thenReturn(parking);
 		Mockito.when(iDateUtilities.getDayOfWeek()).thenReturn(Calendar.WEDNESDAY);
@@ -63,6 +70,8 @@ public class ParkingImplTest {
 	public void testRegisterVehicleFailByDate() throws Exception {
 		
 		// Arrange
+		vehicle = new Vehicle("321", "bcd-123", "car", 80f);
+
 		Mockito.when(iDbNoSql.save(bill)).thenReturn(true);
 		Mockito.when(iDbNoSql.findOne(parking.getId(), Parking.class)).thenReturn(parking);
 		Mockito.when(iDateUtilities.getDayOfWeek()).thenReturn(Calendar.SUNDAY);
@@ -75,17 +84,89 @@ public class ParkingImplTest {
 		} catch (Exception e) {
 			assertEquals("You are not authorized to in on sundays or mondays", e.getMessage());
 			throw e;
+		}		
+	}
+
+	/**
+	 * *Si la moto permaneció un 10 horas y es de 650CC se cobra 6.000
+	 * @throws Exception 
+	 */
+	@Test
+	public void testCharge() throws Exception {
+		
+		// Arrange		
+		vehicle = new Vehicle("test", "", "MOTORCYCLE", 650f);
+		
+		Calendar dateIn = Calendar.getInstance();
+		dateIn.set(2017, Calendar.DECEMBER, 21, 0, 0);
+		
+		Calendar dateOut = Calendar.getInstance();
+		dateIn.set(2017, Calendar.DECEMBER, 21, 10, 0);
+		
+		parking = new ParkingDataBuilder().build();
+		
+		this.bill = new BillDataBuilder()
+				.setParkingId(parking.getId())
+				.setVehicle(vehicle)
+				.setDateIn(dateIn.getTime())
+				.setDateOut(dateOut.getTime())
+				.build();
+		
+		List<Bill> bills = new ArrayList<>();
+		bills.add(this.bill);
+		
+		Map<String, String> fieldValues = new HashMap<>();
+		fieldValues.put("licensePlate", vehicle.getLicensePlate());
+		fieldValues.put("state", "true");
+		
+		
+		Mockito.when(iDbNoSql.findOne(parking.getId(), Parking.class)).thenReturn(parking); 
+		Mockito.when(iDbNoSql.findByFieldValues(fieldValues, Bill.class)).thenReturn(bills);
+		Mockito.when(iDbNoSql.saveOrUpdate(bill)).thenReturn(true); 
+		Mockito.when(this.iDateUtilities.calculateNumHoursBetweenDates(bill.getDateIn(), bill.getDateOut())).thenReturn(10f);
+		
+		try {
+			// act
+			bill = ParkingImpl.charge(parking.getId(), vehicle.getLicensePlate());
+			//assert
+			System.out.println("Total moto: " + bill.getValue());
+			assertEquals(new Double(6000), bill.getValue());
+		} catch (Exception e) {
+			fail();
 		}
 		
-		
-		// assert
-		assertNotNull(bill);		
 	}
 
+	/**
+	 * Calculate motorcycle value test
+	 */
 	@Test
-	public void testCharge() {
-		fail("Not yet implemented");
+	public void calculateBillValueMotorcycleTest() {
+		
+		PriceTable priceTable = new PriceTableDataBuilder().build();
+		
+		Float value = ParkingImpl.calcucalateBillBalue(10f, priceTable.getPricesTable().get("MOTORCYCLE"));
+		
+		System.out.println("Test value: " + value);
+		assertEquals(Float.compare(4000f, value), 0);
+	
+		
 	}
-
+	
+	/**
+	 * Calculate 
+	 */
+	@Test
+	public void calculateBillValueCarTest() {
+		
+		PriceTable priceTable = new PriceTableDataBuilder().build();
+		
+		Float value = ParkingImpl.calcucalateBillBalue(27f, priceTable.getPricesTable().get("CAR"));
+		
+		System.out.println("Test car value: " + value);
+		assertEquals(Float.compare(11000f, value), 0);
+	
+		
+	}
 
 }

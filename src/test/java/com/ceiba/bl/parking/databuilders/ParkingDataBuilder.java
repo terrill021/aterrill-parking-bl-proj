@@ -24,13 +24,11 @@ public class ParkingDataBuilder {
 		this.name = "Parking-test";
 		this.carsCapacity = 20;
 		this.motorcyclesCapacity = 10;
-		this.priceTable = new PriceTable();
+		this.priceTable = new PriceTableDataBuilder().build();
 		bills = new ArrayList<>();
 		cars = new ArrayList<>();
 		motorcycles = new ArrayList<>();
 	}
-	
-	
 	
 	public String getId() {
 		return id;
