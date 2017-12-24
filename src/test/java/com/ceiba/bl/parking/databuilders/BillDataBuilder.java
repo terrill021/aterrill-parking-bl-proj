@@ -15,7 +15,7 @@ public class BillDataBuilder {
 	private Vehicle vehicle;
 	
 	private Double value;
-	private Boolean state;
+	private String state;
 	
 	public BillDataBuilder () {
 		this.id = "bill-test-id";
@@ -23,7 +23,7 @@ public class BillDataBuilder {
 		this.dateOut = Calendar.getInstance().getTime();
 		this.vehicle = new Vehicle();
 		this.value = 1000d;
-		this.state = true;
+		this.state = "true";
 	}
 	
 	public Bill build() {
@@ -75,11 +75,11 @@ public class BillDataBuilder {
 		return this;
 	}
 
-	public Boolean getState() {
+	public String getState() {
 		return state;
 	}
 
-	public BillDataBuilder setState(Boolean state) {
+	public BillDataBuilder setState(String state) {
 		this.state = state;
 		return this;
 	}

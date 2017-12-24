@@ -48,7 +48,7 @@ public class ParkingImpl implements IParking{
 		Bill bill = new Bill();
 		
 		bill.setVehicle(vehicle);
-		bill.setState(Boolean.TRUE);		
+		bill.setState("true");		
 		bill.setDateIn(iDateUtilities.getDateStamp());
 		bill.setParkingId(parking.getId());
 		iDbNoSql.save(bill);
@@ -77,7 +77,7 @@ public class ParkingImpl implements IParking{
 		
 		Map<String, String> fieldValues = new HashMap<>();
 		fieldValues.put("vehicle.licensePlate", licensePlate);
-		//fieldValues.put("state", "true");
+		fieldValues.put("state", "true");
 		
 		List<Bill> bills  = iDbNoSql.findByFieldValues(fieldValues, Bill.class);
 		
@@ -94,11 +94,13 @@ public class ParkingImpl implements IParking{
 			subTotal += 2000;
 		}
 		
-		Float numHours = iDateUtilities.calculateNumHoursBetweenDates (bill.getDateIn(), iDateUtilities.getDateStamp()); 
+		Long numMinutes = iDateUtilities.calculateNumMinutesBetweenDates(bill.getDateIn(), iDateUtilities.getDateStamp()); 
 		
+		Double numHours = Math.ceil(numMinutes / 60.0);
 		Map<String, Float> pricesTable = parking.getPriceTable().getPricesTable().get(bill.getVehicle().getType()); 
 		
-		bill.setValue(calcucalateBillBalue(numHours, pricesTable) + subTotal);
+		bill.setValue(calculateBillBalue(numHours, pricesTable) + subTotal);
+		bill.setState("false");
 		iDbNoSql.saveOrUpdate(bill);		
 		return bill;
 	}	
@@ -122,9 +124,8 @@ public class ParkingImpl implements IParking{
 	 * @param pricesTable Map prices with unit times and values
 	 * @return bill value by time and price table
 	 */
-	public Float calcucalateBillBalue(Float numHours, Map<String, Float> pricesTable) {
-		
-		Float value = 0f;
+	public Double calculateBillBalue(Double numHours, Map<String, Float> pricesTable) {
+		Double value = 0D;
 		
 		if (numHours > 0) {
 			if (numHours <= 9) {
@@ -133,7 +134,7 @@ public class ParkingImpl implements IParking{
 			}
 			value += pricesTable.get("DAY");
 			numHours -= 24;
-			value += calcucalateBillBalue(numHours, pricesTable);
+			value += calculateBillBalue(numHours, pricesTable);
 		}
 		
 		return value;

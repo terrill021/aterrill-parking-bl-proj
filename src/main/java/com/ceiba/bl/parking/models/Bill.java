@@ -2,8 +2,6 @@ package com.ceiba.bl.parking.models;
 
 import java.util.Date;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
 public class Bill {
 
 	private String id;
@@ -13,13 +11,13 @@ public class Bill {
 	private Vehicle vehicle;
 	
 	private Double value;
-	private Boolean state;
+	private String state;
 	
 	public Bill () {
 		
 	}
 	
-	public Bill(String id, Date dateIn, Date dateOut, String parkingId, Vehicle vehicle, Double value, Boolean state) {
+	public Bill(String id, Date dateIn, Date dateOut, String parkingId, Vehicle vehicle, Double value, String state) {
 		super();
 		this.id = id;
 		this.dateIn = dateIn;
@@ -30,11 +28,11 @@ public class Bill {
 		this.state = state;
 	}
 
-	public Boolean getState() {
+	public String getState() {
 		return state;
 	}
 
-	public void setState(Boolean state) {
+	public void setState(String state) {
 		this.state = state;
 	}
 

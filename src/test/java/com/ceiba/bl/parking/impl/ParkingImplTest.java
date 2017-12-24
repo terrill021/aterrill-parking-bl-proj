@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,12 +117,11 @@ public class ParkingImplTest {
 		Map<String, String> fieldValues = new HashMap<>();
 		fieldValues.put("licensePlate", vehicle.getLicensePlate());
 		fieldValues.put("state", "true");
-		
-		
+				
 		Mockito.when(iDbNoSql.findOne(parking.getId(), Parking.class)).thenReturn(parking); 
 		Mockito.when(iDbNoSql.findByFieldValues(fieldValues, Bill.class)).thenReturn(bills);
 		Mockito.when(iDbNoSql.saveOrUpdate(bill)).thenReturn(true); 
-		Mockito.when(this.iDateUtilities.calculateNumHoursBetweenDates(bill.getDateIn(), bill.getDateOut())).thenReturn(10f);
+		Mockito.when(this.iDateUtilities.calculateNumMinutesBetweenDates(bill.getDateIn(), bill.getDateOut())).thenReturn(60L*10L);
 		
 		try {
 			// act
@@ -145,10 +143,10 @@ public class ParkingImplTest {
 		
 		PriceTable priceTable = new PriceTableDataBuilder().build();
 		
-		Float value = ParkingImpl.calcucalateBillBalue(10f, priceTable.getPricesTable().get("MOTORCYCLE"));
+		Double value = ParkingImpl.calculateBillBalue(10D, priceTable.getPricesTable().get("MOTORCYCLE"));
 		
 		System.out.println("Test value: " + value);
-		assertEquals(Float.compare(4000f, value), 0);
+		assertEquals(Double.compare(4000f, value), 0);
 	
 		
 	}
@@ -161,10 +159,10 @@ public class ParkingImplTest {
 		
 		PriceTable priceTable = new PriceTableDataBuilder().build();
 		
-		Float value = ParkingImpl.calcucalateBillBalue(27f, priceTable.getPricesTable().get("CAR"));
+		Double value = ParkingImpl.calculateBillBalue(27D, priceTable.getPricesTable().get("CAR"));
 		
 		System.out.println("Test car value: " + value);
-		assertEquals(Float.compare(11000f, value), 0);
+		assertEquals(Double.compare(11000f, value), 0);
 	
 		
 	}
