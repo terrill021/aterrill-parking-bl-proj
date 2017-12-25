@@ -7,16 +7,16 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    testCompile project.ext.junit
-    testCompile project.ext.mockito
-    compile group: 'org.springframework', name: 'spring-context', version: '4.3.13.RELEASE'  
-    compile project(":aterrill-repository-proj")
-    compile project(":aterrill-utilities-proj")       
+   // testCompile project.ext.junit
+   // testCompile project.ext.mockito
+   // compile group: 'org.springframework', name: 'spring-context', version: '4.3.13.RELEASE'  
+    //compile project(":aterrill-repository-proj")
+   // compile project(":aterrill-utilities-proj")       
 }
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'aterrill-parking-proj',
+        attributes 'Implementation-Title': 'aterrill-parking-bl-proj',
                    'Implementation-Version': version
     }
 }
